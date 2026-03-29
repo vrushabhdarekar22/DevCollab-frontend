@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import API from "../../api/api"
 
 function Login() {
   const navigate = useNavigate();
@@ -11,11 +12,24 @@ function Login() {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setTimeout(() => setLoading(false), 1500); // replace with API call
-    console.log(form);
+
+    try {
+      const res = await API.post("/auth/signin", form);
+
+      console.log("Success:", res.data);
+
+      // redirect after success
+      navigate("/projects");
+
+    } catch (err) {
+      console.error(err.response?.data?.message || err.message);
+      alert(err.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

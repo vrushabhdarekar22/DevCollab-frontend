@@ -1,39 +1,39 @@
-import { useState } from "react";
+import { useState, useEffect, } from "react";
+import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/layout/Navbar";
 import { Plus, Search } from "lucide-react";
 import CreateProjectModal from "../../components/project/CreateProjectModal";
+import API from "../../api/api"
 
 function Explore() {
   const [showModal, setShowModal] = useState(false);
   const [search, setSearch] = useState("");
+  const [projects, setProjects] = useState([]);
+  const navigate = useNavigate();
 
-  const projects = [
-    {
-      title: "AI Chat App",
-      techStack: ["React", "Node", "OpenAI"],
-      description: "ChatGPT-like app with real-time features and streaming responses.",
-    },
-    {
-      title: "E-Commerce Platform",
-      techStack: ["MERN", "Stripe"],
-      description: "Full stack ecommerce with payment integration and order tracking.",
-    },
-    {
-      title: "Dev Portfolio Builder",
-      techStack: ["Next.js", "Tailwind"],
-      description: "Generate beautiful portfolios from your GitHub profile automatically.",
-    },
-    {
-      title: "Task Management SaaS",
-      techStack: ["React", "Express", "MongoDB"],
-      description: "Collaborative task boards with real-time updates and role control.",
-    },
-  ];
+  //  Fetch projects
+  const fetchProjects = async () => {
+    try {
+      const res = await API.get("/project/explore");
+      console.log("Success", res.data);
+      setProjects(res.data.projects);
+    } catch (err) {
+      console.log(err.response?.data || err.message);
+    }
+  };
 
-  const filteredProjects = projects.filter((p) =>
-    p.title.toLowerCase().includes(search.toLowerCase()) ||
-    p.techStack.some((t) => t.toLowerCase().includes(search.toLowerCase()))
-  );
+  useEffect(() => {
+    fetchProjects();
+  }, []);
+
+  //  Filter projects
+  const filteredProjects = projects.filter((p) => {
+    const title = p.title || "";
+    const term = search || "";
+    return title.toLowerCase().includes(term.toLowerCase());
+  });
+
+
 
   return (
     <div className="min-h-screen bg-gray-950 text-white">
@@ -117,7 +117,7 @@ function Explore() {
 
                 {/* Tech tags */}
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {project.techStack.map((tech, i) => (
+                  {project.techStack?.map((tech, i) => (
                     <span
                       key={i}
                       className="text-xs px-2.5 py-1 rounded-lg font-medium text-blue-300 bg-blue-500/10 border border-blue-500/15"
@@ -134,13 +134,14 @@ function Explore() {
 
                 {/* Button */}
                 <button
+                  onClick={() => navigate(`/projects/view-project/${project._id}`)}
                   className="w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                   style={{
                     background: "linear-gradient(135deg, #2563eb, #3b82f6)",
                     boxShadow: "0 0 20px rgba(59,130,246,0.2)",
                   }}
                 >
-                  Send Request →
+                  View Project →
                 </button>
               </div>
             ))}
@@ -177,7 +178,7 @@ function Explore() {
       </button>
 
       {/* Modal */}
-      {showModal && <CreateProjectModal onClose={() => setShowModal(false)} />}
+      {showModal && <CreateProjectModal onClose={() => setShowModal(false)} onProjectCreated={fetchProjects} />}
     </div>
   );
 }

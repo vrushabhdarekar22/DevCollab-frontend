@@ -1,67 +1,55 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Navbar from "../../components/layout/Navbar";
+import API from "../../api/api";
 import { Check, X, Clock, Users, Crown } from "lucide-react";
 
 const TABS = ["incoming", "outgoing"];
 
 function Requests() {
   const [activeTab, setActiveTab] = useState("incoming");
+  const [incomingRequests, setIncomingRequests] = useState([]);
+  const [outgoingRequests, setOutgoingRequests] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data — replace with API calls
-  const [incomingRequests, setIncomingRequests] = useState([
-    {
-      id: "1",
-      user: { name: "Arjun Mehta", avatar: "A", skills: "React, Node.js" },
-      project: "DevCollab Platform",
-      sentAt: "2 hours ago",
-    },
-    {
-      id: "2",
-      user: { name: "Priya Shah", avatar: "P", skills: "Python, ML, Flask" },
-      project: "AI Resume Analyzer",
-      sentAt: "1 day ago",
-    },
-    {
-      id: "3",
-      user: { name: "Rahul Verma", avatar: "R", skills: "MERN, Stripe" },
-      project: "DevCollab Platform",
-      sentAt: "3 days ago",
-    },
-  ]);
-
-  const [outgoingRequests] = useState([
-    {
-      id: "4",
-      project: "E-Commerce App",
-      techStack: ["MERN", "Stripe"],
-      status: "pending",
-      sentAt: "1 hour ago",
-    },
-    {
-      id: "5",
-      project: "Open Source CLI Tool",
-      techStack: ["Go", "CLI"],
-      status: "accepted",
-      sentAt: "3 days ago",
-    },
-    {
-      id: "6",
-      project: "Mobile Fitness App",
-      techStack: ["React Native", "Expo"],
-      status: "rejected",
-      sentAt: "5 days ago",
-    },
-  ]);
-
-  const handleAccept = (id) => {
-    setIncomingRequests((prev) => prev.filter((r) => r.id !== id));
-    // API call: accept request
+  const fetchRequests = async () => {
+    try {
+      setLoading(true);
+      const res = await API.get("/project/requests");
+      setIncomingRequests(res.data.incoming || []);
+      setOutgoingRequests(res.data.outgoing || []);
+    } catch (err) {
+      console.error("Failed to fetch requests:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleReject = (id) => {
-    setIncomingRequests((prev) => prev.filter((r) => r.id !== id));
-    // API call: reject request
+  useEffect(() => {
+    fetchRequests();
+  }, []);
+
+  const handleAccept = async (requestId, projectId, userId) => {
+    try {
+      await API.post(`/project/accept-request/${projectId}/${userId}`);
+      fetchRequests();
+    } catch (err) {
+      console.error("Accept request failed:", err);
+      alert(err.response?.data?.message || "Could not accept request");
+    }
   };
+
+  const handleReject = async (requestId, projectId, userId) => {
+    try {
+      await API.post(`/project/reject-request/${projectId}/${userId}`);
+      fetchRequests();
+    } catch (err) {
+      console.error("Reject request failed:", err);
+      alert(err.response?.data?.message || "Could not reject request");
+    }
+  };
+
+
+  
 
   const statusStyle = (status) => {
     if (status === "accepted")
@@ -178,14 +166,21 @@ function Requests() {
                       background: "linear-gradient(135deg, #2563eb, #3b82f6)",
                     }}
                   >
-                    {req.user.avatar}
+                    {req.user?.fullName
+                      ? req.user.fullName
+                          .split(" ")
+                          .map((t) => t[0])
+                          .join("")
+                          .substring(0, 2)
+                          .toUpperCase()
+                      : req.user?.email?.slice(0, 2).toUpperCase() || "?"}
                   </div>
 
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center gap-2 mb-1">
                       <p className="text-sm font-bold text-white">
-                        {req.user.name}
+                        {req.user?.fullName || req.user?.email || "Unknown"}
                       </p>
                       <span className="text-xs text-gray-600">•</span>
                       <p className="text-xs text-gray-500">{req.sentAt}</p>
@@ -196,22 +191,25 @@ function Requests() {
                         {req.project}
                       </span>
                     </p>
-                    <p className="text-xs text-gray-600">
-                      Skills: {req.user.skills}
-                    </p>
+                    {req.role && (
+                      <p className="text-xs text-gray-600">Role: {req.role}</p>
+                    )}
+                    {req.message && (
+                      <p className="text-xs text-gray-600">Message: {req.message}</p>
+                    )}
                   </div>
 
                   {/* Actions */}
                   <div className="flex gap-2 shrink-0">
                     <button
-                      onClick={() => handleReject(req.id)}
+                      onClick={() => handleReject(req.id, req.projectId, req.user?._id)}
                       className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-red-400 bg-red-500/10 border border-red-500/15 hover:bg-red-500/20 transition-all duration-200"
                     >
                       <X size={13} />
                       Reject
                     </button>
                     <button
-                      onClick={() => handleAccept(req.id)}
+                      onClick={() => handleAccept(req.id, req.projectId, req.user?._id)}
                       className="flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-semibold text-white transition-all duration-200 hover:scale-[1.03]"
                       style={{
                         background: "linear-gradient(135deg, #2563eb, #3b82f6)",

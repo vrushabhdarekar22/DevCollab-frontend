@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/layout/Navbar";
 import { Crown, Users, Github, Linkedin, Pencil, X, Check } from "lucide-react";
@@ -6,30 +6,115 @@ import { Crown, Users, Github, Linkedin, Pencil, X, Check } from "lucide-react";
 function Profile() {
   const navigate = useNavigate();
 
-  const [user, setUser] = useState({
-    fullName: "Vrushabh Darekar",
-    email: "vrushabh@example.com",
-    bio: "Passionate full-stack developer building scalable apps 🚀",
-    skills: "React, Node.js, MongoDB, Express, Tailwind CSS",
-    githubURL: "https://github.com/",
-    linkedinURL: "https://linkedin.com/",
-    profileImage: "",
-    ownedProjects: [1, 2],
-    joinedProjects: [1],
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [form, setForm] = useState({
+    fullName: "",
+    bio: "",
+    skills: "",
+    githubURL: "",
+    linkedinURL: "",
+    profileImage: ""
   });
 
-  const [showModal, setShowModal] = useState(false);
-  const [form, setForm] = useState({ ...user });
+  useEffect(() => {
+    async function loadProfile() {
+      try {
+        const res = await fetch("http://localhost:8000/user/view-profile", {
+          method: "GET",
+          credentials: "include",
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          if (res.status === 401) {
+            navigate("/login");
+            return;
+          }
+          throw new Error(data.error || "Failed to load profile");
+        }
+        setUser(data);
+        setForm({
+          fullName: data.fullName || "",
+          bio: data.bio || "",
+          skills: data.skills || "",
+          githubURL: data.githubURL || "",
+          linkedinURL: data.linkedinURL || "",
+          profileImage: data.profileImage || ""
+        });
+      } catch (err) {
+        console.error(err);
+        alert("Failed to load profile: " + err.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadProfile();
+  }, [navigate]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSave = () => {
-    setUser({ ...form });
-    setShowModal(false);
-    // API call goes here
+  const handleSave = async () => {
+    setSaving(true);
+    try {
+      const updates = {
+        fullName: form.fullName,
+        bio: form.bio,
+        skills: form.skills,
+        githubURL: form.githubURL,
+        linkedinURL: form.linkedinURL,
+        profileImage: form.profileImage
+      };
+
+      const res = await fetch("http://localhost:8000/user/update-profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(updates),
+      });
+      const body = await res.json();
+      if (!res.ok) {
+        throw new Error(body.error || body.message || "Update failed");
+      }
+      setUser({ ...user, ...updates });
+      setShowModal(false);
+    } catch (err) {
+      console.error(err);
+      alert("Failed to update profile: " + err.message);
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+          <p>Loading profile...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gray-950 text-white flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-400 mb-4">Failed to load profile</p>
+          <button
+            onClick={() => navigate("/login")}
+            className="px-4 py-2 bg-blue-500 rounded-lg hover:bg-blue-600 transition-colors"
+          >
+            Go to Login
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const skillList = user.skills
     ? user.skills.split(",").map((s) => s.trim()).filter(Boolean)
@@ -93,7 +178,7 @@ function Profile() {
                 onClick={() => navigate("/my-projects")}
               >
                 <Crown size={14} className="text-yellow-400 mb-1" />
-                <p className="text-lg font-bold">{user.ownedProjects.length}</p>
+                <p className="text-lg font-bold">{user.ownedProjects?.length || 0}</p>
                 <p className="text-xs text-gray-500">Owned</p>
               </div>
               <div
@@ -101,7 +186,7 @@ function Profile() {
                 onClick={() => navigate("/my-projects")}
               >
                 <Users size={14} className="text-green-400 mb-1" />
-                <p className="text-lg font-bold">{user.joinedProjects.length}</p>
+                <p className="text-lg font-bold">{user.joinedProjects?.length || 0}</p>
                 <p className="text-xs text-gray-500">Joined</p>
               </div>
             </div>
@@ -134,7 +219,17 @@ function Profile() {
 
             {/* Edit Profile button */}
             <button
-              onClick={() => { setForm({ ...user }); setShowModal(true); }}
+              onClick={() => { 
+                setForm({
+                  fullName: user.fullName || "",
+                  bio: user.bio || "",
+                  skills: user.skills || "",
+                  githubURL: user.githubURL || "",
+                  linkedinURL: user.linkedinURL || "",
+                  profileImage: user.profileImage || ""
+                }); 
+                setShowModal(true); 
+              }}
               className="mt-5 w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
               style={{
                 background: "linear-gradient(135deg, #2563eb, #3b82f6)",
@@ -188,12 +283,12 @@ function Profile() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="bg-yellow-500/5 border border-yellow-500/15 p-4 rounded-xl text-center">
                   <Crown size={18} className="text-yellow-400 mx-auto mb-2" />
-                  <p className="text-2xl font-extrabold">{user.ownedProjects.length}</p>
+                  <p className="text-2xl font-extrabold">{user.ownedProjects?.length || 0}</p>
                   <p className="text-gray-500 text-xs mt-1">Projects Owned</p>
                 </div>
                 <div className="bg-green-500/5 border border-green-500/15 p-4 rounded-xl text-center">
                   <Users size={18} className="text-green-400 mx-auto mb-2" />
-                  <p className="text-2xl font-extrabold">{user.joinedProjects.length}</p>
+                  <p className="text-2xl font-extrabold">{user.joinedProjects?.length || 0}</p>
                   <p className="text-gray-500 text-xs mt-1">Projects Joined</p>
                 </div>
               </div>
@@ -326,14 +421,24 @@ function Profile() {
               </button>
               <button
                 onClick={handleSave}
-                className="flex-1 py-3 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                disabled={saving}
+                className="flex-1 py-3 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
                 style={{
-                  background: "linear-gradient(135deg, #2563eb, #3b82f6)",
-                  boxShadow: "0 0 20px rgba(59,130,246,0.3)",
+                  background: saving ? "rgba(59,130,246,0.5)" : "linear-gradient(135deg, #2563eb, #3b82f6)",
+                  boxShadow: saving ? "none" : "0 0 20px rgba(59,130,246,0.3)",
                 }}
               >
-                <Check size={15} />
-                Save Changes
+                {saving ? (
+                  <>
+                    <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full"></div>
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Check size={15} />
+                    Save Changes
+                  </>
+                )}
               </button>
             </div>
           </div>

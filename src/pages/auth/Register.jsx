@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import API from "../../api/api";
 
 function Register() {
   const navigate = useNavigate();
-  const [form, setForm] = useState({ fullname: "", email: "", password: "" });
+  const [form, setForm] = useState({ fullName: "", email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -16,33 +17,20 @@ function Register() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8000/user/signup", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(form),
-      });
+      const res = await API.post("/auth/signup", form);
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.message || "Something went wrong");
-      }
-
-      console.log("Success:", data);
+      console.log("Success:", res.data);
 
       // redirect after success
       navigate("/login");
 
     } catch (err) {
-      console.error(err.message);
-      alert(err.message);
+      console.error(err.response?.data?.message || err.message);
+      alert(err.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <div className="min-h-screen bg-gray-950 text-white flex flex-col">
 
@@ -120,9 +108,9 @@ function Register() {
                 </label>
                 <input
                   type="text"
-                  name="fullname"
+                  name="fullName"
                   placeholder="John Doe"
-                  value={form.fullname}
+                  value={form.fullName}
                   onChange={handleChange}
                   required
                   className="w-full bg-gray-900/80 border border-white/8 text-white placeholder-gray-600 text-sm rounded-xl px-4 py-3.5 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/30 transition-all duration-200"

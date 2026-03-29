@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Plus,
   Search,
@@ -11,7 +11,10 @@ import {
   Clock,
   AlertCircle,
   X,
+  Trash2,
 } from "lucide-react";
+import API from "../../../api/api";
+import { useToast } from "../../../components/ui/ToastProvider";
 
 // ── Priority config ──────────────────────────────────────────────────────────
 const PRIORITY = {
@@ -100,7 +103,7 @@ function Avatar({ name, size = "sm" }) {
 }
 
 // ── TaskCard ─────────────────────────────────────────────────────────────────
-function TaskCard({ task, isOwner, onStatusChange }) {
+function TaskCard({ task, isOwner, onStatusChange, onDeleteTask }) {
   const p = PRIORITY[task.priority] || PRIORITY.low;
   const s = STATUS[task.status] || STATUS.todo;
   const StatusIcon = s.icon;
@@ -154,8 +157,19 @@ function TaskCard({ task, isOwner, onStatusChange }) {
         <div className="flex items-center gap-1.5">
           {task.assignedTo ? (
             <>
-              <Avatar name={task.assignedTo} size="sm" />
-              <span className="text-xs text-gray-400">{task.assignedTo}</span>
+              <Avatar
+                name={
+                  task.assignedTo?.fullName ||
+                  task.assignedTo?.name ||
+                  (typeof task.assignedTo === "string" ? task.assignedTo : "Unknown")
+                }
+                size="sm"
+              />
+              <span className="text-xs text-gray-400">
+                {task.assignedTo?.fullName ||
+                  task.assignedTo?.name ||
+                  (typeof task.assignedTo === "string" ? task.assignedTo : "Unknown")}
+              </span>
             </>
           ) : (
             <span className="text-xs text-gray-600 flex items-center gap-1">
@@ -183,22 +197,31 @@ function TaskCard({ task, isOwner, onStatusChange }) {
 
           {/* Status selector */}
           {isOwner ? (
-            <select
-              value={task.status}
-              onChange={(e) => onStatusChange(task._id, e.target.value)}
-              className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border cursor-pointer
-                         bg-transparent outline-none appearance-none ${s.bg} ${s.color}`}
-            >
-              {Object.entries(STATUS).map(([val, cfg]) => (
-                <option
-                  key={val}
-                  value={val}
-                  className="bg-gray-900 text-white"
-                >
-                  {cfg.label}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center gap-2">
+              <select
+                value={task.status}
+                onChange={(e) => onStatusChange(task._id, e.target.value)}
+                className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border cursor-pointer
+                           bg-transparent outline-none appearance-none ${s.bg} ${s.color}`}
+              >
+                {Object.entries(STATUS).map(([val, cfg]) => (
+                  <option
+                    key={val}
+                    value={val}
+                    className="bg-gray-900 text-white"
+                  >
+                    {cfg.label}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={() => onDeleteTask(task._id)}
+                className="p-1 rounded-md text-red-400 hover:text-red-300"
+                title="Delete task"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
           ) : (
             <span
               className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${s.bg} ${s.color}`}
@@ -317,8 +340,8 @@ function CreateTaskModal({ members, onClose, onSubmit }) {
               >
                 <option value="" className="bg-gray-900">Unassigned</option>
                 {members.map((m) => (
-                  <option key={m.id} value={m.name} className="bg-gray-900">
-                    {m.name}
+                  <option key={m.id} value={m.id} className="bg-gray-900">
+                    {m.name || m.email || "Unknown"}
                   </option>
                 ))}
               </select>
@@ -386,22 +409,71 @@ function FilterSelect({ value, onChange, options, placeholder }) {
 }
 
 // ── TasksTab ─────────────────────────────────────────────────────────────────
-export default function TasksTab({ tasks: initialTasks = [], members = [], isOwner = false }) {
+export default function TasksTab({ tasks: initialTasks = [], members = [], isOwner = false, projectId, onTasksChange }) {
   const [tasks, setTasks] = useState(initialTasks);
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
   const [filterPriority, setFilterPriority] = useState("");
   const [showModal, setShowModal] = useState(false);
+  const { addToast } = useToast();
 
-  const handleStatusChange = (taskId, newStatus) => {
-    setTasks((prev) =>
-      prev.map((t) => (t._id === taskId ? { ...t, status: newStatus } : t))
-    );
+  useEffect(() => {
+    setTasks(initialTasks || []);
+  }, [initialTasks]);
+
+  const handleStatusChange = async (taskId, newStatus) => {
+    try {
+      await API.patch(`/task/update-task-status/${taskId}`, { status: newStatus });
+      setTasks((prev) =>
+        prev.map((t) => (t._id === taskId ? { ...t, status: newStatus } : t))
+      );
+      addToast("Task status updated", "success");
+      onTasksChange?.();
+    } catch (err) {
+      console.error("Could not update task status", err);
+      const errMsg = err.response?.data?.message || "Failed to update task status";
+      addToast(errMsg, "error");
+      alert(errMsg);
+    }
   };
 
-  const handleCreateTask = (newTask) => {
-    setTasks((prev) => [newTask, ...prev]);
+  const handleCreateTask = async (newTask) => {
+    const payload = {
+      ...newTask,
+      projectId,
+      assignedTo: newTask.assignedTo,
+    };
+
+    try {
+      const res = await API.post("/task/create-task", payload);
+      if (res.data?.success) {
+        const created = res.data?.data;
+        setTasks((prev) => [created, ...prev]);
+        addToast("Task created successfully", "success");
+        onTasksChange?.();
+      }
+    } catch (err) {
+      console.error("Could not create task", err);
+      const errMsg = err.response?.data?.message || "Failed to create task";
+      addToast(errMsg, "error");
+      alert(errMsg);
+    }
   };
+
+  const handleDeleteTask = async (taskId) => {
+    try {
+      await API.delete(`/task/delete-task/${taskId}`);
+      setTasks((prev) => prev.filter((t) => t._id !== taskId));
+      addToast("Task deleted", "success");
+      onTasksChange?.();
+    } catch (err) {
+      console.error("Could not delete task", err);
+      const errMsg = err.response?.data?.message || "Failed to delete task";
+      addToast(errMsg, "error");
+      alert(errMsg);
+    }
+  };
+
 
   const filtered = tasks.filter((t) => {
     const matchSearch = t.title
@@ -525,6 +597,7 @@ export default function TasksTab({ tasks: initialTasks = [], members = [], isOwn
               task={task}
               isOwner={isOwner}
               onStatusChange={handleStatusChange}
+              onDeleteTask={handleDeleteTask}
             />
           ))
         )}

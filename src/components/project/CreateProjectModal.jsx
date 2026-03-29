@@ -1,21 +1,56 @@
 import { useState } from "react";
 import { X, Check } from "lucide-react";
+import API from "../../api/api"
+import { useToast } from "../ui/ToastProvider";
 
-function CreateProjectModal({ onClose }) {
+function CreateProjectModal({ onClose, onProjectCreated }) {
+  const { addToast } = useToast();
   const [form, setForm] = useState({
     title: "",
     description: "",
     techStack: "",
   });
 
+  const [loading, setLoading] = useState(false); // ✅ added
+
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(form); // replace with API call
-    onClose();
+    setLoading(true); // ✅ start loading
+
+    try {
+      // ✅ convert techStack string → array
+      const payload = {
+        ...form,
+        techStack: form.techStack
+          .split(",")
+          .map((t) => t.trim())
+          .filter((t) => t !== ""),
+      };
+
+      const res = await API.post('/project/create-project', payload);
+
+      console.log(res.data);
+      addToast("Project created successfully", "success");
+
+      // ✅ refresh explore page
+      if (onProjectCreated) {
+        onProjectCreated();
+      }
+
+      onClose();
+
+    } catch (err) {
+      console.log(err.response?.data || err.message);
+      const message = err.response?.data?.message || "Failed to create project";
+      addToast(message, "error");
+      alert(message);
+    } finally {
+      setLoading(false); // ✅ stop loading
+    }
   };
 
   return (
@@ -111,12 +146,15 @@ function CreateProjectModal({ onClose }) {
             <button
               type="button"
               onClick={onClose}
+              disabled={loading} // ✅ added
               className="flex-1 py-3 rounded-xl text-sm font-semibold text-gray-400 bg-white/5 hover:bg-white/10 border border-white/8 transition-all duration-200"
             >
               Cancel
             </button>
+
             <button
               type="submit"
+              disabled={loading} // ✅ added
               className="flex-1 py-3 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
               style={{
                 background: "linear-gradient(135deg, #2563eb, #3b82f6)",
@@ -124,7 +162,7 @@ function CreateProjectModal({ onClose }) {
               }}
             >
               <Check size={15} />
-              Create Project
+              {loading ? "Creating..." : "Create Project"} {/* ✅ added */}
             </button>
           </div>
         </form>

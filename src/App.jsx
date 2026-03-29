@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { ToastProvider } from "./components/ui/ToastProvider";
 import Login from "./pages/auth/Login";
 import Register from "./pages/auth/Register";
 import "./index.css";
@@ -8,11 +9,13 @@ import Profile from "./pages/profile/Profile";
 import MyProjects from "./pages/projects/MyProjects";
 import Requests from "./pages/projects/Requests";
 import Workspace from "./pages/workspace/Workspace";
+import ViewProject from "./pages/projects/ViewProject";
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
+    <ToastProvider>
+      <BrowserRouter>
+        <Routes>
         {/* Default Redirect */}
 
         <Route path="/" element={<Landing />} />
@@ -28,8 +31,10 @@ function App() {
 
         {/* Workspace routes */}
         <Route path="/workspace/:projectId" element={<Workspace />} />
+        <Route path="/projects/view-project/:projectId" element={<ViewProject />} />
       </Routes>
     </BrowserRouter>
+  </ToastProvider>
   );
 }
 

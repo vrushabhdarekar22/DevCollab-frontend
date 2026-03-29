@@ -1,5 +1,31 @@
 import { CheckSquare, Clock, AlertCircle } from "lucide-react";
-import { TODAY, priorityStyle, statusStyle, statusLabel } from "../mockData";
+
+const TODAY = new Date().toISOString().split("T")[0];
+
+function formatDay(dateValue) {
+  if (!dateValue) return "";
+  const date = new Date(dateValue);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toISOString().split("T")[0];
+}
+
+function priorityStyle(priority) {
+  if (priority === "high") return "text-red-400 bg-red-500/10";
+  if (priority === "medium") return "text-yellow-400 bg-yellow-500/10";
+  return "text-emerald-400 bg-emerald-500/10";
+}
+
+function statusStyle(status) {
+  if (status === "in-progress") return "text-blue-400 bg-blue-500/10";
+  if (status === "completed") return "text-emerald-400 bg-emerald-500/10";
+  return "text-gray-400 bg-gray-500/10";
+}
+
+function statusLabel(status) {
+  if (status === "in-progress") return "In Progress";
+  if (status === "completed") return "Completed";
+  return "To Do";
+}
 
 // ── Stat Card ──────────────────────────────────────────────────────────────
 function StatCard({ label, value, icon, colorKey }) {
@@ -36,26 +62,31 @@ function StatCard({ label, value, icon, colorKey }) {
 
 // ── Mini Task Row ──────────────────────────────────────────────────────────
 function MiniTaskRow({ task }) {
-  const isOverdue = task.dueDate < TODAY && task.status !== "completed";
+  const dueDateValue = formatDay(task.dueDate);
+  const isOverdue = dueDateValue && dueDateValue < TODAY && task.status !== "completed";
+
+  const assignedName =
+    task.assignedTo?.fullName || task.assignedTo?.name ||
+    (typeof task.assignedTo === "string" ? task.assignedTo : "Unassigned");
 
   return (
     <div className="flex items-center justify-between gap-3 bg-gray-900/60 border border-white/6 rounded-xl px-4 py-3 hover:border-blue-500/20 transition-all duration-200">
       {/* Title + assigned */}
       <div className="min-w-0 flex-1">
         <p className="text-sm font-semibold text-white truncate">{task.title}</p>
-        <p className="text-xs text-gray-500 mt-0.5">{task.assignedTo}</p>
+        <p className="text-xs text-gray-500 mt-0.5">{assignedName}</p>
       </div>
 
       {/* Badges */}
       <div className="flex items-center gap-2 shrink-0">
         <span className={`text-xs px-2 py-0.5 rounded-lg font-semibold ${priorityStyle(task.priority)}`}>
-          {task.priority}
+          {task.priority || "todo"}
         </span>
         <span className={`text-xs px-2 py-0.5 rounded-lg font-semibold ${statusStyle(task.status)}`}>
           {statusLabel(task.status)}
         </span>
         <span className={`text-xs font-medium ${isOverdue ? "text-red-400" : "text-gray-600"}`}>
-          {task.dueDate}
+          {dueDateValue || "—"}
         </span>
       </div>
     </div>
@@ -88,15 +119,28 @@ function Section({ label, icon, color, tasks, emptyText }) {
 }
 
 // ── DashboardTab ───────────────────────────────────────────────────────────
-function DashboardTab({ tasks }) {
-  const total = tasks.length;
-  const completed = tasks.filter((t) => t.status === "completed").length;
-  const dueToday = tasks.filter(
-    (t) => t.dueDate === TODAY && t.status !== "completed"
-  );
-  const overdue = tasks.filter(
-    (t) => t.dueDate < TODAY && t.status !== "completed"
-  );
+function DashboardTab({ tasks, currentUser, isOwner }) {
+  const filteredTasks = isOwner
+    ? tasks
+    : tasks.filter((t) => {
+        if (!t.assignedTo || !currentUser?._id) return false;
+        const assignedId =
+          typeof t.assignedTo === "string"
+            ? t.assignedTo
+            : t.assignedTo?._id || t.assignedTo?.id;
+        return assignedId?.toString() === currentUser._id.toString();
+      });
+
+  const total = filteredTasks.length;
+  const completed = filteredTasks.filter((t) => t.status === "completed").length;
+  const dueToday = filteredTasks.filter((t) => {
+    const dueDay = formatDay(t.dueDate);
+    return dueDay === TODAY && t.status !== "completed";
+  });
+  const overdue = filteredTasks.filter((t) => {
+    const dueDay = formatDay(t.dueDate);
+    return dueDay && dueDay < TODAY && t.status !== "completed";
+  });
 
   const completionPct = total === 0 ? 0 : Math.round((completed / total) * 100);
 

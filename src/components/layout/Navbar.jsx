@@ -1,17 +1,21 @@
 import { LogOut, User } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
-// import { useAuth } from "../../context/AuthContext";
+import API from "../../api/api";
 
 function Navbar() {
   const navigate = useNavigate();
   const location = useLocation();
-  // const { user, setUser } = useAuth();
 
-  // const handleLogout = () => {
-  //   localStorage.removeItem("user");
-  //   setUser(null);
-  //   navigate("/login");
-  // };
+  const handleLogout = async () => {
+    try {
+      await API.post("/user/logout");
+      localStorage.removeItem("user");
+      navigate("/login");
+    } catch (err) {
+      console.error("Logout failed", err);
+      alert(err.response?.data?.message || "Could not logout.");
+    }
+  };
 
   const isActive = (path) => location.pathname === path;
 
@@ -80,7 +84,7 @@ function Navbar() {
 
         {/* Logout */}
         <button
-          // onClick={handleLogout}
+          onClick={handleLogout}
           className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-500 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200 ml-1"
           title="Logout"
         >

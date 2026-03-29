@@ -1,39 +1,44 @@
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/layout/Navbar";
 import { Crown, Users, ArrowRight } from "lucide-react";
+import API from "../../api/api"
 
 function MyProjects() {
   const [activeTab, setActiveTab] = useState("owned");
+  const [ownedProjects,setOwnedProjects]=useState([]);
+  const [joinedProjects,setJoinedProjects]=useState([]);
   const navigate = useNavigate();
 
-  const ownedProjects = [
-    {
-      id: "1",
-      title: "DevCollab Platform",
-      techStack: ["React", "Node", "MongoDB"],
-      description: "Developer collaboration platform with task tracking and team management.",
-      members: 4,
-    },
-    {
-      id: "2",
-      title: "AI Resume Analyzer",
-      techStack: ["Python", "ML", "Flask"],
-      description: "Analyze resumes using AI and provide actionable feedback.",
-      members: 2,
-    },
-  ];
+  //  Fetch owned projects
+  const project1 = async () => {
+    try {
+      const res = await API.get("/project/owned-projects");
+      console.log("Success", res.data);
+      setOwnedProjects(res.data.projects);
+    } catch (err) {
+      console.log(err.response?.data || err.message);
+    }
+  };
 
-  const joinedProjects = [
-    {
-      id: "3",
-      title: "E-Commerce App",
-      techStack: ["MERN", "Stripe"],
-      description: "Full stack ecommerce platform with payment integration.",
-      members: 6,
-    },
-  ];
 
+   const project2 = async () => {
+    try {
+      const res = await API.get("/project/joined-projects");
+      console.log("Success", res.data);
+      setJoinedProjects(res.data.projects);
+    } catch (err) {
+      console.log(err.response?.data || err.message);
+    }
+  };
+
+  useEffect(() => {
+    project1();
+    project2();
+  }, []);
+
+
+  
   const projects = activeTab === "owned" ? ownedProjects : joinedProjects;
 
   return (
@@ -122,7 +127,7 @@ function MyProjects() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {projects.map((project) => (
               <div
-                key={project.id}
+                key={project._id}
                 className="group relative bg-gray-900/60 border border-white/6 rounded-2xl p-5 hover:border-blue-500/30 transition-all duration-300 hover:bg-gray-900/80 flex flex-col"
               >
                 {/* Hover glow */}
@@ -148,7 +153,8 @@ function MyProjects() {
                   </span>
                   <span className="text-xs text-gray-600 flex items-center gap-1">
                     <Users size={11} />
-                    {project.members} members
+                    {/* {console.log("Project mem"+project.members)} */}
+                    {project.members.length} members
                   </span>
                 </div>
 
@@ -159,7 +165,7 @@ function MyProjects() {
 
                 {/* Tech tags */}
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {project.techStack.map((tech, i) => (
+                  {project.techStack?.map((tech, i) => (
                     <span
                       key={i}
                       className="text-xs px-2.5 py-1 rounded-lg font-medium text-blue-300 bg-blue-500/10 border border-blue-500/15"
@@ -176,7 +182,7 @@ function MyProjects() {
 
                 {/* Open Workspace button */}
                 <button
-                  onClick={() => navigate(`/workspace/${project.id}`)}
+                  onClick={() => navigate(`/workspace/${project._id}`)}
                   className="w-full py-2.5 rounded-xl text-sm font-semibold text-white flex items-center justify-center gap-2 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                   style={{
                     background: "linear-gradient(135deg, #2563eb, #3b82f6)",
