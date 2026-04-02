@@ -70,11 +70,7 @@ function Sidebar({ activeTab, setActiveTab, projectName, onBack }) {
               <span>{label}</span>
 
               {/* Chat — UI only badge */}
-              {key === "chat" && (
-                <span className="ml-auto text-xs bg-gray-800 text-gray-500 border border-white/8 px-1.5 py-0.5 rounded-md">
-                  Soon
-                </span>
-              )}
+              {key === "chat" }
             </button>
           );
         })}

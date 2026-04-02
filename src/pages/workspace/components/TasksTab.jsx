@@ -103,12 +103,29 @@ function Avatar({ name, size = "sm" }) {
 }
 
 // ── TaskCard ─────────────────────────────────────────────────────────────────
-function TaskCard({ task, isOwner, onStatusChange, onDeleteTask }) {
+function TaskCard({ task, isOwner, members, onStatusChange, onDeleteTask }) {
   const p = PRIORITY[task.priority] || PRIORITY.low;
   const s = STATUS[task.status] || STATUS.todo;
   const StatusIcon = s.icon;
   const overdue =
     task.status !== "completed" && isOverdue(task.dueDate);
+
+  const resolvedAssignee = (() => {
+    if (!task.assignedTo) return null;
+
+    if (typeof task.assignedTo === "object") {
+      return task.assignedTo.fullName || task.assignedTo.name || task.assignedTo.email;
+    }
+
+    const member = members.find(
+      (m) =>
+        m._id?.toString() === task.assignedTo.toString() ||
+        m.id?.toString() === task.assignedTo.toString() ||
+        m.user?.toString() === task.assignedTo.toString()
+    );
+
+    return member?.fullName || member?.name || member?.email || task.assignedTo;
+  })();
 
   return (
     <div
@@ -151,85 +168,70 @@ function TaskCard({ task, isOwner, onStatusChange, onDeleteTask }) {
         </p>
       )}
 
-      {/* Bottom row */}
-      <div className="flex items-center justify-between gap-2 pl-6">
-        {/* Assignee */}
-        <div className="flex items-center gap-1.5">
-          {task.assignedTo ? (
-            <>
-              <Avatar
-                name={
-                  task.assignedTo?.fullName ||
-                  task.assignedTo?.name ||
-                  (typeof task.assignedTo === "string" ? task.assignedTo : "Unknown")
-                }
-                size="sm"
-              />
-              <span className="text-xs text-gray-400">
-                {task.assignedTo?.fullName ||
-                  task.assignedTo?.name ||
-                  (typeof task.assignedTo === "string" ? task.assignedTo : "Unknown")}
-              </span>
-            </>
-          ) : (
-            <span className="text-xs text-gray-600 flex items-center gap-1">
-              <User className="w-3 h-3" /> Unassigned
-            </span>
-          )}
-        </div>
+      {/* Assignee */}
+      <div className="flex items-center gap-1.5">
+        {resolvedAssignee ? (
+          <>
+            <Avatar name={resolvedAssignee} size="sm" />
+            <span className="text-xs text-gray-400">{resolvedAssignee}</span>
+          </>
+        ) : (
+          <span className="text-xs text-gray-600 flex items-center gap-1">
+            <User className="w-3 h-3" /> Unassigned
+          </span>
+        )}
+      </div>
 
-        <div className="flex items-center gap-2">
-          {/* Due date */}
-          {task.dueDate && (
-            <span
-              className={`flex items-center gap-1 text-[11px] font-medium ${
-                overdue ? "text-red-400" : "text-gray-500"
+      <div className="flex items-center gap-2">
+        {/* Due date */}
+        {task.dueDate && (
+          <span
+            className={`flex items-center gap-1 text-[11px] font-medium ${overdue ? "text-red-400" : "text-gray-500"
               }`}
-            >
-              {overdue ? (
-                <AlertCircle className="w-3 h-3" />
-              ) : (
-                <Calendar className="w-3 h-3" />
-              )}
-              {formatDate(task.dueDate)}
-            </span>
-          )}
+          >
+            {overdue ? (
+              <AlertCircle className="w-3 h-3" />
+            ) : (
+              <Calendar className="w-3 h-3" />
+            )}
+            {formatDate(task.dueDate)}
+          </span>
+        )}
 
-          {/* Status selector */}
-          {isOwner ? (
-            <div className="flex items-center gap-2">
-              <select
-                value={task.status}
-                onChange={(e) => onStatusChange(task._id, e.target.value)}
-                className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border cursor-pointer
+        {/* Status selector */}
+        {isOwner ? (
+          <div className="flex items-center gap-2">
+            <select
+              value={task.status}
+              onChange={(e) => onStatusChange(task._id, e.target.value)}
+              className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border cursor-pointer
                            bg-transparent outline-none appearance-none ${s.bg} ${s.color}`}
-              >
-                {Object.entries(STATUS).map(([val, cfg]) => (
-                  <option
-                    key={val}
-                    value={val}
-                    className="bg-gray-900 text-white"
-                  >
-                    {cfg.label}
-                  </option>
-                ))}
-              </select>
-              <button
-                onClick={() => onDeleteTask(task._id)}
-                className="p-1 rounded-md text-red-400 hover:text-red-300"
-                title="Delete task"
-              >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          ) : (
-            <span
-              className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${s.bg} ${s.color}`}
             >
-              {s.label}
-            </span>
-          )}
-        </div>
+              {Object.entries(STATUS).map(([val, cfg]) => (
+                <option
+                  key={val}
+                  value={val}
+                  className="bg-gray-900 text-white"
+                >
+                  {cfg.label}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => onDeleteTask(task._id)}
+              className="p-1 rounded-md text-red-400 hover:text-red-300"
+              title="Delete task"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        ) : (
+          <span
+            className={`text-[11px] font-semibold px-2 py-0.5 rounded-full border ${s.bg} ${s.color}`}
+          >
+            {s.label}
+          </span>
+        )}
       </div>
     </div>
   );
@@ -527,17 +529,15 @@ export default function TasksTab({ tasks: initialTasks = [], members = [], isOwn
           <button
             key={key}
             onClick={() => setFilterStatus(key)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${
-              filterStatus === key
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${filterStatus === key
                 ? "bg-blue-500/15 border-blue-500/40 text-blue-400"
                 : "bg-white/3 border-white/8 text-gray-500 hover:border-white/15 hover:text-gray-400"
-            }`}
+              }`}
           >
             {label}
             <span
-              className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${
-                filterStatus === key ? "bg-blue-500/20" : "bg-white/5"
-              }`}
+              className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${filterStatus === key ? "bg-blue-500/20" : "bg-white/5"
+                }`}
             >
               {count}
             </span>
@@ -595,6 +595,7 @@ export default function TasksTab({ tasks: initialTasks = [], members = [], isOwn
             <TaskCard
               key={task._id}
               task={task}
+              members={members}
               isOwner={isOwner}
               onStatusChange={handleStatusChange}
               onDeleteTask={handleDeleteTask}

@@ -138,7 +138,7 @@ function Workspace() {
       case "members":
         return <MembersTab members={members} />;
       case "chat":
-        return <ChatTab projectName={project.title || project.name} />;
+        return <ChatTab projectId={projectId} currentUser={currentUser} projectName={project.title || project.name} />;
       default:
         return null;
     }

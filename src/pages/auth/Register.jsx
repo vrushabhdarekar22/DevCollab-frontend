@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import API from "../../api/api";
+import { useToast } from "../../components/ui/ToastProvider";
 
 function Register() {
   const navigate = useNavigate();
+  const { addToast } = useToast();
   const [form, setForm] = useState({ fullName: "", email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -19,14 +21,16 @@ function Register() {
     try {
       const res = await API.post("/auth/signup", form);
 
+      addToast("Account created successfully. Please login.", "success");
       console.log("Success:", res.data);
 
       // redirect after success
       navigate("/login");
 
     } catch (err) {
-      console.error(err.response?.data?.message || err.message);
-      alert(err.response?.data?.message || "Something went wrong");
+      const error = err.response?.data?.message || err.message || "Something went wrong";
+      console.error(error);
+      addToast(error, "error");
     } finally {
       setLoading(false);
     }
