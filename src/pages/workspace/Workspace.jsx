@@ -7,6 +7,7 @@ import Sidebar from "./components/Sidebar";
 import DashboardTab from "./components/DashboardTab";
 import TasksTab from "./components/TasksTab";
 import MembersTab from "./components/MembersTab";
+import NotesTab from "./components/NotesTab";
 import ChatTab from "./components/ChatTab";
 
 function Workspace() {
@@ -137,6 +138,8 @@ function Workspace() {
         );
       case "members":
         return <MembersTab members={members} />;
+      case "notes":
+        return <NotesTab projectId={projectId} currentUser={currentUser} />;
       case "chat":
         return <ChatTab projectId={projectId} currentUser={currentUser} projectName={project.title || project.name} />;
       default:

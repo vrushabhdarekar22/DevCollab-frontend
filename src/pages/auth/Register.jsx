@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import API from "../../api/api";
 import { useToast } from "../../components/ui/ToastProvider";
+import ThemeToggle from "../../components/ui/ThemeToggle";
 
 function Register() {
   const navigate = useNavigate();
@@ -62,12 +63,15 @@ function Register() {
           <span className="text-blue-500 text-xl">⬡</span>
           <span className="text-lg font-bold tracking-tight">DevCollab</span>
         </button>
-        <p className="text-sm text-gray-500">
-          Have an account?{" "}
-          <Link to="/login" className="text-blue-400 hover:text-blue-300 font-medium transition-colors">
-            Sign in
-          </Link>
-        </p>
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <p className="text-sm text-gray-500">
+            Have an account?{" "}
+            <Link to="/login" className="text-blue-400 hover:text-blue-300 font-medium transition-colors">
+              Sign in
+            </Link>
+          </p>
+        </div>
       </nav>
 
       {/* Content */}
@@ -78,8 +82,8 @@ function Register() {
           <div
             className="rounded-2xl border border-white/8 p-8 md:p-10"
             style={{
-              background: "linear-gradient(145deg, #111827, #0f172a)",
-              boxShadow: "0 0 0 1px rgba(255,255,255,0.04), 0 40px 80px -20px rgba(0,0,0,0.7)",
+              background: "linear-gradient(145deg, var(--surface), var(--surface-muted))",
+              boxShadow: "0 0 0 1px var(--border), 0 40px 80px -20px rgba(15,23,42,0.45)",
             }}
           >
             {/* Header */}
@@ -167,7 +171,7 @@ function Register() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3.5 rounded-xl font-semibold text-white text-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
+                  className="w-full py-3.5 rounded-xl font-semibold text-white preserve-white text-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
                   style={{
                     background: loading ? "rgba(59,130,246,0.5)" : "linear-gradient(135deg, #2563eb, #3b82f6)",
                     boxShadow: loading ? "none" : "0 0 30px rgba(59,130,246,0.35)",

@@ -129,8 +129,7 @@ function TaskCard({ task, isOwner, members, onStatusChange, onDeleteTask }) {
 
   return (
     <div
-      className="group relative flex flex-col gap-3 p-4 rounded-xl border border-white/6 bg-gray-900/40
-                 hover:border-blue-500/25 hover:bg-gray-900/70 transition-all duration-300 overflow-hidden"
+      className="task-card group relative flex flex-col gap-3 p-4 rounded-xl border transition-all duration-300 overflow-hidden"
     >
       {/* hover glow */}
       <div
@@ -147,7 +146,7 @@ function TaskCard({ task, isOwner, members, onStatusChange, onDeleteTask }) {
           <StatusIcon
             className={`w-4 h-4 mt-0.5 flex-shrink-0 ${s.color}`}
           />
-          <span className="text-sm font-medium text-white leading-snug truncate">
+          <span className="text-sm font-medium task-text-strong leading-snug truncate">
             {task.title}
           </span>
         </div>
@@ -163,7 +162,7 @@ function TaskCard({ task, isOwner, members, onStatusChange, onDeleteTask }) {
 
       {/* Description */}
       {task.description && (
-        <p className="text-xs text-gray-500 leading-relaxed line-clamp-2 pl-6">
+        <p className="text-xs task-text-muted leading-relaxed line-clamp-2 pl-6">
           {task.description}
         </p>
       )}
@@ -173,10 +172,10 @@ function TaskCard({ task, isOwner, members, onStatusChange, onDeleteTask }) {
         {resolvedAssignee ? (
           <>
             <Avatar name={resolvedAssignee} size="sm" />
-            <span className="text-xs text-gray-400">{resolvedAssignee}</span>
+            <span className="text-xs task-text-muted">{resolvedAssignee}</span>
           </>
         ) : (
-          <span className="text-xs text-gray-600 flex items-center gap-1">
+          <span className="text-xs task-text-faint flex items-center gap-1">
             <User className="w-3 h-3" /> Unassigned
           </span>
         )}
@@ -186,7 +185,7 @@ function TaskCard({ task, isOwner, members, onStatusChange, onDeleteTask }) {
         {/* Due date */}
         {task.dueDate && (
           <span
-            className={`flex items-center gap-1 text-[11px] font-medium ${overdue ? "text-red-400" : "text-gray-500"
+            className={`flex items-center gap-1 text-[11px] font-medium ${overdue ? "text-red-500" : "task-text-muted"
               }`}
           >
             {overdue ? (
@@ -219,7 +218,7 @@ function TaskCard({ task, isOwner, members, onStatusChange, onDeleteTask }) {
             </select>
             <button
               onClick={() => onDeleteTask(task._id)}
-              className="p-1 rounded-md text-red-400 hover:text-red-300"
+              className="p-1 rounded-md task-soft-btn hover:text-red-500 hover:border-red-300/60"
               title="Delete task"
             >
               <Trash2 className="w-4 h-4" />
@@ -257,8 +256,8 @@ function CreateTaskModal({ members, onClose, onSubmit }) {
   };
 
   const inputCls =
-    "w-full bg-gray-900/60 border border-white/8 rounded-lg px-3 py-2 text-sm text-white placeholder-gray-600 focus:outline-none focus:border-blue-500/50 transition-colors";
-  const labelCls = "block text-xs font-medium text-gray-400 mb-1";
+    "task-input w-full rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-500/50 transition-colors";
+  const labelCls = "block text-xs font-medium task-text-muted mb-1";
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center px-4">
@@ -270,14 +269,18 @@ function CreateTaskModal({ members, onClose, onSubmit }) {
 
       {/* Modal */}
       <div
-        className="relative w-full max-w-md rounded-2xl border border-white/8 p-6 shadow-2xl"
-        style={{ background: "linear-gradient(145deg, #111827, #0f172a)" }}
+        className="relative w-full max-w-md rounded-2xl border p-6 shadow-2xl"
+        style={{
+          background: "linear-gradient(145deg, var(--surface), var(--surface-muted))",
+          borderColor: "var(--border)",
+          boxShadow: "0 0 0 1px var(--border), 0 32px 70px -26px rgba(15,23,42,0.28)",
+        }}
       >
         <div className="flex items-center justify-between mb-5">
-          <h3 className="text-base font-bold text-white">Create New Task</h3>
+          <h3 className="text-base font-bold task-text-strong">Create New Task</h3>
           <button
             onClick={onClose}
-            className="text-gray-500 hover:text-white transition-colors"
+            className="text-gray-500 hover:text-blue-500 transition-colors"
           >
             <X className="w-4 h-4" />
           </button>
@@ -363,14 +366,14 @@ function CreateTaskModal({ members, onClose, onSubmit }) {
         <div className="flex gap-3 mt-6">
           <button
             onClick={onClose}
-            className="flex-1 py-2.5 rounded-lg border border-white/8 text-sm text-gray-400 hover:text-white hover:border-white/20 transition-all"
+            className="flex-1 py-2.5 rounded-lg text-sm task-text-muted task-soft-btn hover:text-blue-600 transition-all"
           >
             Cancel
           </button>
           <button
             onClick={handleSubmit}
             disabled={!form.title.trim()}
-            className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white preserve-white transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             style={{
               background: "linear-gradient(135deg, #2563eb, #3b82f6)",
               boxShadow: form.title.trim()
@@ -393,19 +396,18 @@ function FilterSelect({ value, onChange, options, placeholder }) {
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="appearance-none bg-gray-900/60 border border-white/8 rounded-lg px-3 py-2 pr-8 text-sm text-gray-400
-                   focus:outline-none focus:border-blue-500/40 transition-colors cursor-pointer"
+        className="appearance-none task-input rounded-lg px-3 py-2 pr-8 text-sm focus:outline-none focus:border-blue-500/40 transition-colors cursor-pointer"
       >
-        <option value="" className="bg-gray-900">
+        <option value="">
           {placeholder}
         </option>
         {options.map((o) => (
-          <option key={o.value} value={o.value} className="bg-gray-900">
+          <option key={o.value} value={o.value}>
             {o.label}
           </option>
         ))}
       </select>
-      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-600 pointer-events-none" />
+      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 task-text-faint pointer-events-none" />
     </div>
   );
 }
@@ -498,15 +500,15 @@ export default function TasksTab({ tasks: initialTasks = [], members = [], isOwn
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-xl font-bold text-white">Tasks</h2>
-          <p className="text-xs text-gray-500 mt-0.5">
+          <h2 className="text-xl font-bold task-text-strong">Tasks</h2>
+          <p className="text-xs task-text-muted mt-0.5">
             {counts.all} tasks · {counts.completed} completed
           </p>
         </div>
         {isOwner && (
           <button
             onClick={() => setShowModal(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white transition-all hover:scale-105"
+            className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white preserve-white transition-all hover:scale-105"
             style={{
               background: "linear-gradient(135deg, #2563eb, #3b82f6)",
               boxShadow: "0 0 20px rgba(59,130,246,0.3)",
@@ -529,14 +531,14 @@ export default function TasksTab({ tasks: initialTasks = [], members = [], isOwn
           <button
             key={key}
             onClick={() => setFilterStatus(key)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${filterStatus === key
-                ? "bg-blue-500/15 border-blue-500/40 text-blue-400"
-                : "bg-white/3 border-white/8 text-gray-500 hover:border-white/15 hover:text-gray-400"
+            className={`task-pill flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium border transition-all ${filterStatus === key
+                ? "task-pill-active"
+                : "task-pill-idle"
               }`}
           >
             {label}
             <span
-              className={`px-1.5 py-0.5 rounded-full text-[10px] font-bold ${filterStatus === key ? "bg-blue-500/20" : "bg-white/5"
+              className={`task-pill-count px-1.5 py-0.5 rounded-full text-[10px] font-bold ${filterStatus === key ? "task-pill-count-active" : "task-pill-count-idle"
                 }`}
             >
               {count}
@@ -548,10 +550,9 @@ export default function TasksTab({ tasks: initialTasks = [], members = [], isOwn
       {/* Search + Filters */}
       <div className="flex items-center gap-2 flex-wrap">
         <div className="relative flex-1 min-w-48">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-600" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 task-text-faint" />
           <input
-            className="w-full bg-gray-900/60 border border-white/8 rounded-lg pl-9 pr-3 py-2 text-sm text-white
-                       placeholder-gray-600 focus:outline-none focus:border-blue-500/40 transition-colors"
+            className="task-input w-full rounded-lg pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-blue-500/40 transition-colors"
             placeholder="Search tasks..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -559,7 +560,7 @@ export default function TasksTab({ tasks: initialTasks = [], members = [], isOwn
           {search && (
             <button
               onClick={() => setSearch("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 hover:text-gray-400"
+              className="absolute right-3 top-1/2 -translate-y-1/2 task-text-faint hover:text-gray-500"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -582,11 +583,11 @@ export default function TasksTab({ tasks: initialTasks = [], members = [], isOwn
       <div className="flex flex-col gap-2.5 overflow-y-auto pb-4">
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-gray-900/60 border border-white/5 flex items-center justify-center mb-3">
-              <Flag className="w-5 h-5 text-gray-700" />
+            <div className="w-12 h-12 rounded-2xl task-card flex items-center justify-center mb-3">
+              <Flag className="w-5 h-5 task-text-faint" />
             </div>
-            <p className="text-sm font-medium text-gray-500">No tasks found</p>
-            <p className="text-xs text-gray-700 mt-1">
+            <p className="text-sm font-medium task-text-muted">No tasks found</p>
+            <p className="text-xs task-text-faint mt-1">
               {isOwner ? "Create your first task to get started." : "Check back later."}
             </p>
           </div>
