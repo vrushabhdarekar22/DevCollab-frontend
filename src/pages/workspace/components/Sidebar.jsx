@@ -1,23 +1,27 @@
-import { LayoutDashboard, CheckSquare, Users, MessageSquare } from "lucide-react";
+import { LayoutDashboard, CheckSquare, Users, MessageSquare, FileText } from "lucide-react";
 
 const NAV_ITEMS = [
   { key: "dashboard", label: "Dashboard", icon: LayoutDashboard },
   { key: "tasks", label: "Tasks", icon: CheckSquare },
   { key: "members", label: "Members", icon: Users },
+  { key: "notes", label: "Notes", icon: FileText },
   { key: "chat", label: "Chat", icon: MessageSquare },
 ];
 
 function Sidebar({ activeTab, setActiveTab, projectName, onBack }) {
   return (
     <div
-      className="fixed top-0 left-0 h-screen w-64 flex flex-col border-r border-white/6 z-40"
-      style={{ background: "linear-gradient(180deg, #0f172a 0%, #0a1120 100%)" }}
+      className="fixed top-0 left-0 h-screen w-64 flex flex-col border-r z-40"
+      style={{
+        background: "linear-gradient(180deg, var(--surface) 0%, var(--surface-muted) 100%)",
+        borderColor: "var(--border)",
+      }}
     >
       {/* Logo / Back */}
-      <div className="px-5 py-5 border-b border-white/6">
+      <div className="px-5 py-5 border-b" style={{ borderColor: "var(--border)" }}>
         <button
           onClick={onBack}
-          className="flex items-center gap-2 mb-4 text-gray-500 hover:text-white transition-colors text-sm"
+          className="flex items-center gap-2 mb-4 task-text-muted hover:text-blue-500 transition-colors text-sm"
         >
           <span>←</span>
           <span>My Projects</span>
@@ -32,10 +36,10 @@ function Sidebar({ activeTab, setActiveTab, projectName, onBack }) {
             {projectName?.charAt(0)}
           </div>
           <div className="min-w-0">
-            <p className="text-xs text-gray-500 font-medium uppercase tracking-widest mb-0.5">
+            <p className="text-xs task-text-muted font-medium uppercase tracking-widest mb-0.5">
               Workspace
             </p>
-            <p className="text-sm font-bold text-white truncate leading-tight">
+            <p className="text-sm font-bold task-text-strong truncate leading-tight">
               {projectName}
             </p>
           </div>
@@ -44,7 +48,7 @@ function Sidebar({ activeTab, setActiveTab, projectName, onBack }) {
 
       {/* Nav items */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-        <p className="text-xs font-semibold text-gray-600 uppercase tracking-widest px-3 mb-3">
+        <p className="text-xs font-semibold task-text-faint uppercase tracking-widest px-3 mb-3">
           Navigation
         </p>
 
@@ -56,17 +60,17 @@ function Sidebar({ activeTab, setActiveTab, projectName, onBack }) {
               onClick={() => setActiveTab(key)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group ${
                 isActive
-                  ? "bg-blue-600/20 text-blue-400 border border-blue-500/20"
-                  : "text-gray-500 hover:text-white hover:bg-white/5 border border-transparent"
+                  ? "bg-blue-500/12 text-blue-600 border border-blue-500/25"
+                  : "text-gray-500 hover:text-blue-600 hover:bg-white/10 border border-transparent"
               }`}
             >
               {/* Active indicator bar */}
               <span
                 className={`w-1 h-4 rounded-full transition-all duration-200 shrink-0 ${
-                  isActive ? "bg-blue-400" : "bg-transparent group-hover:bg-white/20"
+                  isActive ? "bg-blue-500" : "bg-transparent group-hover:bg-blue-300"
                 }`}
               />
-              <Icon size={16} className={isActive ? "text-blue-400" : ""} />
+              <Icon size={16} className={isActive ? "text-blue-600" : "task-text-muted"} />
               <span>{label}</span>
 
               {/* Chat — UI only badge */}

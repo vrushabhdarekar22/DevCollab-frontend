@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
+import ThemeToggle from "../components/ui/ThemeToggle";
 
 const FEATURES = [
   {
@@ -109,6 +110,7 @@ function Landing() {
           <span className="text-lg font-bold tracking-tight">DevCollab</span>
         </div>
         <div className="flex items-center gap-3">
+          <ThemeToggle />
           <button
             onClick={() => navigate("/login")}
             className="text-sm text-gray-400 hover:text-white transition-colors px-4 py-2"
@@ -154,7 +156,7 @@ function Landing() {
         <div className="flex flex-col sm:flex-row gap-4 items-center">
           <button
             onClick={() => navigate("/register")}
-            className="group relative px-8 py-3.5 rounded-xl font-semibold text-white overflow-hidden transition-all duration-300 hover:scale-105"
+            className="group relative px-8 py-3.5 rounded-xl font-semibold text-white preserve-white overflow-hidden transition-all duration-300 hover:scale-105"
             style={{
               background: "linear-gradient(135deg, #2563eb, #3b82f6)",
               boxShadow: "0 0 30px rgba(59,130,246,0.35)",
@@ -178,9 +180,9 @@ function Landing() {
           <div
             className="relative rounded-2xl border border-white/8 overflow-hidden"
             style={{
-              background: "linear-gradient(145deg, #111827, #0f172a)",
+              background: "linear-gradient(145deg, var(--surface), var(--surface-muted))",
               boxShadow:
-                "0 0 0 1px rgba(255,255,255,0.05), 0 40px 80px -20px rgba(0,0,0,0.8)",
+                "0 0 0 1px var(--border), 0 40px 80px -20px rgba(15,23,42,0.5)",
             }}
           >
             {/* Fake window bar */}
@@ -264,7 +266,7 @@ function Landing() {
       <section
        ref={statsRef}
         className="relative z-10 border-y border-white/5 py-14"
-        style={{ background: "rgba(255,255,255,0.02)" }}
+        style={{ background: "var(--surface-muted)" }}
       >
         <div className="max-w-3xl mx-auto flex flex-col sm:flex-row items-center justify-around gap-8 text-center px-6">
           {STATS.map(({ value, label }) => (
@@ -329,7 +331,7 @@ function Landing() {
       {/* ── HOW IT WORKS ── */}
       <section
         className="relative z-10 py-24 px-6"
-        style={{ background: "rgba(255,255,255,0.015)" }}
+        style={{ background: "var(--surface-muted)" }}
       >
         <div className="max-w-4xl mx-auto text-center mb-14">
           <p className="text-blue-400 text-sm font-semibold uppercase tracking-widest mb-3">
@@ -396,7 +398,7 @@ function Landing() {
           </p>
           <button
             onClick={() => navigate("/register")}
-            className="relative z-10 px-10 py-4 rounded-xl font-semibold text-white text-base transition-all duration-300 hover:scale-105"
+            className="relative z-10 px-10 py-4 rounded-xl font-semibold text-white preserve-white text-base transition-all duration-300 hover:scale-105"
             style={{
               background: "linear-gradient(135deg, #2563eb, #3b82f6)",
               boxShadow: "0 0 40px rgba(59,130,246,0.4)",

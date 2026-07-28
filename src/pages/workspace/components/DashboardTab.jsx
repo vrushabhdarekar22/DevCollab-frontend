@@ -10,15 +10,15 @@ function formatDay(dateValue) {
 }
 
 function priorityStyle(priority) {
-  if (priority === "high") return "text-red-400 bg-red-500/10";
-  if (priority === "medium") return "text-yellow-400 bg-yellow-500/10";
-  return "text-emerald-400 bg-emerald-500/10";
+  if (priority === "high") return "text-red-500 bg-red-500/12 border border-red-500/25";
+  if (priority === "medium") return "text-amber-500 bg-amber-500/12 border border-amber-500/25";
+  return "text-emerald-500 bg-emerald-500/12 border border-emerald-500/25";
 }
 
 function statusStyle(status) {
-  if (status === "in-progress") return "text-blue-400 bg-blue-500/10";
-  if (status === "completed") return "text-emerald-400 bg-emerald-500/10";
-  return "text-gray-400 bg-gray-500/10";
+  if (status === "in-progress") return "text-blue-500 bg-blue-500/12 border border-blue-500/20";
+  if (status === "completed") return "text-emerald-500 bg-emerald-500/12 border border-emerald-500/20";
+  return "text-gray-500 bg-gray-500/12 border border-gray-500/20";
 }
 
 function statusLabel(status) {
@@ -31,31 +31,28 @@ function statusLabel(status) {
 function StatCard({ label, value, icon, colorKey }) {
   const styles = {
     blue: {
-      card: "bg-blue-500/8 border-blue-500/20",
-      icon: "bg-blue-500/15 text-blue-400",
-      value: "text-blue-400",
+      icon: "stat-icon-blue",
+      value: "stat-value-blue",
     },
     yellow: {
-      card: "bg-yellow-500/8 border-yellow-500/20",
-      icon: "bg-yellow-500/15 text-yellow-400",
-      value: "text-yellow-400",
+      icon: "stat-icon-yellow",
+      value: "stat-value-yellow",
     },
     red: {
-      card: "bg-red-500/8 border-red-500/20",
-      icon: "bg-red-500/15 text-red-400",
-      value: "text-red-400",
+      icon: "stat-icon-red",
+      value: "stat-value-red",
     },
   };
 
   const s = styles[colorKey];
 
   return (
-    <div className={`rounded-2xl border p-5 ${s.card}`}>
+    <div className="task-card rounded-2xl border p-5">
       <div className={`w-9 h-9 rounded-xl flex items-center justify-center mb-4 ${s.icon}`}>
         {icon}
       </div>
       <p className={`text-4xl font-extrabold mb-1 ${s.value}`}>{value}</p>
-      <p className="text-xs text-gray-500 font-medium uppercase tracking-widest">{label}</p>
+      <p className="text-xs task-text-muted font-medium uppercase tracking-widest">{label}</p>
     </div>
   );
 }
@@ -70,11 +67,11 @@ function MiniTaskRow({ task }) {
     (typeof task.assignedTo === "string" ? task.assignedTo : "Unassigned");
 
   return (
-    <div className="flex items-center justify-between gap-3 bg-gray-900/60 border border-white/6 rounded-xl px-4 py-3 hover:border-blue-500/20 transition-all duration-200">
+    <div className="task-card flex items-center justify-between gap-3 rounded-xl px-4 py-3 hover:border-blue-500/35 transition-all duration-200">
       {/* Title + assigned */}
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-semibold text-white truncate">{task.title}</p>
-        <p className="text-xs text-gray-500 mt-0.5">{assignedName}</p>
+        <p className="text-sm font-semibold task-text-strong truncate">{task.title}</p>
+        <p className="text-xs task-text-muted mt-0.5">{assignedName}</p>
       </div>
 
       {/* Badges */}
@@ -85,7 +82,7 @@ function MiniTaskRow({ task }) {
         <span className={`text-xs px-2 py-0.5 rounded-lg font-semibold ${statusStyle(task.status)}`}>
           {statusLabel(task.status)}
         </span>
-        <span className={`text-xs font-medium ${isOverdue ? "text-red-400" : "text-gray-600"}`}>
+        <span className={`text-xs font-medium ${isOverdue ? "text-red-500" : "task-text-faint"}`}>
           {dueDateValue || "—"}
         </span>
       </div>
@@ -100,12 +97,12 @@ function Section({ label, icon, color, tasks, emptyText }) {
       <h3 className={`text-xs font-semibold uppercase tracking-widest mb-4 flex items-center gap-2 ${color}`}>
         {icon}
         {label}
-        <span className="ml-1 text-gray-700 font-bold">({tasks.length})</span>
+        <span className="ml-1 task-text-muted font-bold">({tasks.length})</span>
       </h3>
 
       {tasks.length === 0 ? (
-        <div className="flex items-center justify-center py-10 rounded-2xl border border-white/5 bg-gray-900/30">
-          <p className="text-sm text-gray-600">{emptyText}</p>
+        <div className="task-card flex items-center justify-center py-10 rounded-2xl">
+          <p className="text-sm task-text-muted">{emptyText}</p>
         </div>
       ) : (
         <div className="space-y-2">
@@ -152,7 +149,7 @@ function DashboardTab({ tasks, currentUser, isOwner }) {
         <p className="text-blue-400 text-xs font-semibold uppercase tracking-widest mb-1">
           Overview
         </p>
-        <h2 className="text-2xl font-extrabold tracking-tight">Dashboard</h2>
+        <h2 className="text-2xl font-extrabold tracking-tight task-text-strong">Dashboard</h2>
       </div>
 
       {/* Stat cards */}
@@ -178,12 +175,12 @@ function DashboardTab({ tasks, currentUser, isOwner }) {
       </div>
 
       {/* Progress bar */}
-      <div className="bg-gray-900/60 border border-white/6 rounded-2xl p-5">
+      <div className="task-card rounded-2xl p-5">
         <div className="flex items-center justify-between mb-3">
-          <p className="text-sm font-semibold text-white">Overall Progress</p>
+          <p className="text-sm font-semibold task-text-strong">Overall Progress</p>
           <p className="text-sm font-bold text-blue-400">{completionPct}%</p>
         </div>
-        <div className="h-2 w-full bg-gray-800 rounded-full overflow-hidden">
+        <div className="h-2 w-full progress-track rounded-full overflow-hidden">
           <div
             className="h-full rounded-full transition-all duration-700"
             style={{
@@ -192,7 +189,7 @@ function DashboardTab({ tasks, currentUser, isOwner }) {
             }}
           />
         </div>
-        <p className="text-xs text-gray-600 mt-2">
+        <p className="text-xs task-text-muted mt-2">
           {completed} of {total} tasks completed
         </p>
       </div>

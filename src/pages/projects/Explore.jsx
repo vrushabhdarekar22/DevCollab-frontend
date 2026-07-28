@@ -24,13 +24,17 @@ function Explore() {
 
   useEffect(() => {
     fetchProjects();
-  }, []);
+  }, []); // fetch projects on render
 
-  //  Filter projects
+
+  //  Filter projects(This should happen at backend)
   const filteredProjects = projects.filter((p) => {
-    const title = p.title || "";
-    const term = search || "";
-    return title.toLowerCase().includes(term.toLowerCase());
+    const term = (search || "").toLowerCase();
+    if (!term) return true;
+    const title = (p.title || "").toLowerCase();
+    const desc = (p.description || "").toLowerCase();
+    const techs = Array.isArray(p.techStack) ? p.techStack.join(" ").toLowerCase() : "";
+    return title.includes(term) || desc.includes(term) || techs.includes(term);
   });
 
 
@@ -135,7 +139,7 @@ function Explore() {
                 {/* Button */}
                 <button
                   onClick={() => navigate(`/projects/view-project/${project._id}`)}
-                  className="w-full py-2.5 rounded-xl text-sm font-semibold text-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                  className="w-full py-2.5 rounded-xl text-sm font-semibold text-white preserve-white transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
                   style={{
                     background: "linear-gradient(135deg, #2563eb, #3b82f6)",
                     boxShadow: "0 0 20px rgba(59,130,246,0.2)",
@@ -167,7 +171,7 @@ function Explore() {
       {/* Floating create button */}
       <button
         onClick={() => setShowModal(true)}
-        className="fixed bottom-8 right-8 z-50 flex items-center gap-2 px-5 py-3.5 rounded-2xl font-semibold text-sm text-white transition-all duration-300 hover:scale-105 active:scale-95"
+        className="fixed bottom-8 right-8 z-50 flex items-center gap-2 px-5 py-3.5 rounded-2xl font-semibold text-sm text-white preserve-white transition-all duration-300 hover:scale-105 active:scale-95"
         style={{
           background: "linear-gradient(135deg, #2563eb, #3b82f6)",
           boxShadow: "0 0 30px rgba(59,130,246,0.45)",

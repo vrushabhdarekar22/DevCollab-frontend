@@ -185,14 +185,25 @@ export default function ChatTab({
   useEffect(() => {
     if (!projectId || !currentUser) return;
 
-    const newSocket = io("http://localhost:8000", {
+    const authToken = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("token="))
+      ?.split("=")[1];
+
+    const socketUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
+    const newSocket = io(socketUrl, {
       transports: ["websocket", "polling"],
       withCredentials: true,
+      auth: { token: authToken },
     });
     setSocket(newSocket);
 
+    newSocket.on("connect_error", (err) => {
+      console.error("Socket connect error:", err);
+    });
+
     newSocket.on("connect", () => {
-      newSocket.emit("joinProject", projectId);
+      newSocket.emit("join-project", projectId);
     });
 
     newSocket.on("newMessage", (message) => {
@@ -228,7 +239,10 @@ export default function ChatTab({
     };
 
     fetchMessages();
-    return () => newSocket.disconnect();
+    return () => {
+      newSocket.emit("leave-project", projectId);
+      newSocket.disconnect();
+    };
   }, [projectId, currentUser]);
 
   // ── Send ──────────────────────────────────────────────────────────────────
@@ -337,29 +351,16 @@ export default function ChatTab({
       )}
 
       {/* ── Input ── */}
-      <div className="flex-shrink-0 pt-3" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+      <div className="flex-shrink-0 pt-3" style={{ borderTop: "1px solid var(--border)" }}>
         <div
-          className="flex items-center gap-2 rounded-2xl px-3 py-2 transition-all duration-200
-                     focus-within:shadow-[0_0_0_1.5px_rgba(99,102,241,0.4),0_4px_24px_rgba(99,102,241,0.12)]"
-          style={{
-            background: "rgba(20, 22, 34, 0.9)",
-            border: "1px solid rgba(255,255,255,0.07)",
-            backdropFilter: "blur(8px)",
-          }}
+          className="chat-input-shell flex items-center gap-2 rounded-2xl px-3 py-2 transition-all duration-200"
         >
-          {/* Attachment */}
-          <button
-            className="p-1.5 rounded-lg text-gray-600 hover:text-gray-400
-                       hover:bg-white/5 transition-all duration-150 flex-shrink-0"
-          >
-            <Paperclip className="w-4 h-4" />
-          </button>
-
+          
           {/* Text input */}
           <input
             ref={inputRef}
-            className="flex-1 bg-transparent text-sm text-gray-100 placeholder-gray-600 outline-none leading-relaxed"
-            placeholder="Message #general…"
+            className="flex-1 chat-input text-sm outline-none leading-relaxed"
+            placeholder="Message"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
@@ -370,13 +371,7 @@ export default function ChatTab({
             }}
           />
 
-          {/* Emoji */}
-          <button
-            className="p-1.5 rounded-lg text-gray-600 hover:text-gray-400
-                       hover:bg-white/5 transition-all duration-150 flex-shrink-0"
-          >
-            <Smile className="w-4 h-4" />
-          </button>
+          
 
           {/* Send */}
           <button

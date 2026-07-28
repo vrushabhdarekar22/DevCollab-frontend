@@ -1,1 +1,234 @@
 @import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+  --bg: #0b1220;
+  --surface: #0f172a;
+  --surface-muted: #131c2f;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --border: rgba(255, 255, 255, 0.08);
+  --overlay: rgba(59, 130, 246, 0.06);
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f4f6fb;
+  --surface: #ffffff;
+  --surface-muted: #eef2f7;
+  --text: #0f172a;
+  --muted: #475569;
+  --border: rgba(15, 23, 42, 0.08);
+  --overlay: rgba(37, 99, 235, 0.06);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  transition: background-color 180ms ease, color 180ms ease;
+}
+
+/* Soft theme-aware helpers for existing Tailwind classes */
+:root[data-theme="light"] [class*="bg-gray-950"] {
+  background-color: var(--bg) !important;
+}
+
+:root[data-theme="light"] [class*="bg-gray-900"] {
+  background-color: var(--surface) !important;
+}
+
+:root[data-theme="light"] [class*="bg-white/5"],
+:root[data-theme="light"] [class*="bg-white/6"],
+:root[data-theme="light"] [class*="bg-white/8"],
+:root[data-theme="light"] [class*="bg-white/10"],
+:root[data-theme="light"] [class*="bg-white/20"] {
+  background-color: var(--surface-muted) !important;
+}
+
+:root[data-theme="light"] [class*="border-white/5"],
+:root[data-theme="light"] [class*="border-white/6"],
+:root[data-theme="light"] [class*="border-white/8"],
+:root[data-theme="light"] [class*="border-white/10"],
+:root[data-theme="light"] [class*="border-white/15"],
+:root[data-theme="light"] [class*="border-white/20"] {
+  border-color: var(--border) !important;
+}
+
+:root[data-theme="light"] [class*="text-white"] {
+  color: var(--text) !important;
+}
+
+:root[data-theme="light"] [class*="bg-blue"][class*="text-white"],
+:root[data-theme="light"] [class*="bg-red"][class*="text-white"],
+:root[data-theme="light"] [class*="bg-emerald"][class*="text-white"],
+:root[data-theme="light"] [class*="bg-amber"][class*="text-white"],
+:root[data-theme="light"] [class*="bg-green"][class*="text-white"] {
+  color: #ffffff !important;
+}
+
+:root[data-theme="light"] [style*="linear-gradient"][class*="text-white"] {
+  color: #ffffff !important;
+}
+
+:root[data-theme="light"] .preserve-white {
+  color: #ffffff !important;
+}
+
+/* Task UI tokens */
+.task-card {
+  background: var(--surface);
+  border-color: var(--border);
+  box-shadow: 0 20px 60px -32px rgba(15, 23, 42, 0.35);
+}
+.task-card:hover {
+  background: var(--surface-muted);
+  border-color: rgba(37, 99, 235, 0.35);
+}
+:root[data-theme="light"] .task-card {
+  box-shadow: 0 24px 60px -34px rgba(15, 23, 42, 0.18);
+}
+
+.task-text-strong {
+  color: var(--text);
+}
+.task-text-muted {
+  color: var(--muted);
+}
+.task-text-faint {
+  color: #94a3b8;
+}
+:root[data-theme="light"] .task-text-faint {
+  color: #6b7280;
+}
+
+.task-pill {
+  background: var(--surface);
+  border-color: var(--border);
+  color: var(--muted);
+}
+.task-pill-idle {
+  background: var(--surface-muted);
+}
+.task-pill-active {
+  background: rgba(37, 99, 235, 0.12);
+  border-color: rgba(37, 99, 235, 0.35);
+  color: #1d4ed8;
+}
+.task-pill-count {
+  background: var(--surface);
+  color: var(--muted);
+}
+.task-pill-count-active {
+  background: rgba(37, 99, 235, 0.18);
+  color: #1d4ed8;
+}
+.task-pill-count-idle {
+  background: var(--surface);
+  color: var(--muted);
+}
+
+.task-input {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  caret-color: #2563eb;
+}
+.task-input::placeholder {
+  color: var(--muted);
+}
+
+.task-soft-btn {
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+  color: var(--muted);
+}
+.task-soft-btn:hover {
+  background: rgba(37, 99, 235, 0.08);
+  border-color: rgba(37, 99, 235, 0.35);
+}
+
+/* Dashboard stat styles */
+.stat-icon-blue { background: rgba(37, 99, 235, 0.12); color: #2563eb; }
+.stat-icon-yellow { background: rgba(245, 158, 11, 0.14); color: #d97706; }
+.stat-icon-red { background: rgba(239, 68, 68, 0.12); color: #ef4444; }
+.stat-value-blue { color: #2563eb; }
+.stat-value-yellow { color: #d97706; }
+.stat-value-red { color: #ef4444; }
+
+.progress-track {
+  background: var(--surface-muted);
+  border: 1px solid var(--border);
+}
+
+/* Chat input */
+.chat-input-shell {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: 0 4px 24px -18px rgba(15, 23, 42, 0.25);
+}
+.chat-input-shell:focus-within {
+  box-shadow: 0 0 0 1.5px rgba(99, 102, 241, 0.35), 0 10px 30px -20px rgba(99, 102, 241, 0.25);
+  border-color: rgba(99, 102, 241, 0.4);
+}
+.chat-input {
+  background: transparent;
+  color: var(--text);
+}
+.chat-input::placeholder {
+  color: var(--muted);
+}
+
+/* Create project modal */
+.project-modal {
+  background: linear-gradient(145deg, var(--surface), var(--surface-muted));
+  border-color: var(--border);
+  box-shadow:
+    0 0 0 1px var(--border),
+    0 25px 80px -30px rgba(15, 23, 42, 0.45);
+  position: relative;
+}
+.project-modal::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border-radius: 18px;
+  background: radial-gradient(circle at 20% 20%, rgba(37,99,235,0.12), transparent 45%),
+              radial-gradient(circle at 80% 10%, rgba(59,130,246,0.12), transparent 40%);
+  z-index: -1;
+}
+
+:root[data-theme="light"] [class*="text-gray-300"] {
+  color: #1f2937 !important;
+}
+
+:root[data-theme="light"] [class*="text-gray-400"] {
+  color: #334155 !important;
+}
+
+:root[data-theme="light"] [class*="text-gray-500"] {
+  color: var(--muted) !important;
+}
+
+:root[data-theme="light"] [class*="text-gray-600"],
+:root[data-theme="light"] [class*="text-gray-700"] {
+  color: #1e293b !important;
+}
+
+:root[data-theme="light"] .backdrop-blur-sm {
+  background-color: rgba(255, 255, 255, 0.7) !important;
+}
+
+:root[data-theme="light"] input,
+:root[data-theme="light"] textarea,
+:root[data-theme="light"] select {
+  color: var(--text);
+}
+
+:root[data-theme="light"] ::placeholder {
+  color: #94a3b8;
+}
+
+:root[data-theme="light"] .shadow-lg,
+:root[data-theme="light"] .shadow-xl {
+  box-shadow: 0 25px 60px -24px rgba(15, 23, 42, 0.25) !important;
+}

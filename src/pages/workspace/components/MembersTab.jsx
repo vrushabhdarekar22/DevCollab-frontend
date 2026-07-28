@@ -26,8 +26,8 @@ function Avatar({ name, size = "lg" }) {
     size === "lg"
       ? "w-14 h-14 text-lg"
       : size === "md"
-      ? "w-10 h-10 text-sm"
-      : "w-8 h-8 text-xs";
+        ? "w-10 h-10 text-sm"
+        : "w-8 h-8 text-xs";
   return (
     <div
       className={`${sz} rounded-2xl bg-gradient-to-br ${AVATAR_GRADIENTS[idx]}
@@ -93,13 +93,12 @@ function MemberCard({ member }) {
               {member.name}
             </h3>
             <span
-              className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
-                isOwner
+              className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${isOwner
                   ? "bg-yellow-500/10 border-yellow-500/25 text-yellow-400"
                   : "bg-blue-500/10 border-blue-500/20 text-blue-400"
-              }`}
+                }`}
             >
-              {isOwner ? "Owner" : "Member"}
+              {isOwner ? "Owner" : member.role || "Member"}
             </span>
           </div>
           {member.email && (

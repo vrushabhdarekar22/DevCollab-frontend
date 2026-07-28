@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import API from "../../api/api";
 import { useToast } from "../../components/ui/ToastProvider";
+import ThemeToggle from "../../components/ui/ThemeToggle";
 
 function Login() {
   const navigate = useNavigate();
@@ -65,12 +66,15 @@ function Login() {
           <span className="text-blue-500 text-xl">⬡</span>
           <span className="text-lg font-bold tracking-tight">DevCollab</span>
         </button>
-        <p className="text-sm text-gray-500">
-          No account?{" "}
-          <Link to="/register" className="text-blue-400 hover:text-blue-300 font-medium transition-colors">
-            Sign up free
-          </Link>
-        </p>
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <p className="text-sm text-gray-500">
+            No account?{" "}
+            <Link to="/register" className="text-blue-400 hover:text-blue-300 font-medium transition-colors">
+              Sign up free
+            </Link>
+          </p>
+        </div>
       </nav>
 
       {/* Main */}
@@ -81,9 +85,9 @@ function Login() {
           <div
             className="rounded-2xl border border-white/8 p-8 md:p-10"
             style={{
-              background: "linear-gradient(145deg, #111827, #0f172a)",
+              background: "linear-gradient(145deg, var(--surface), var(--surface-muted))",
               boxShadow:
-                "0 0 0 1px rgba(255,255,255,0.04), 0 40px 80px -20px rgba(0,0,0,0.7)",
+                "0 0 0 1px var(--border), 0 40px 80px -20px rgba(15,23,42,0.45)",
             }}
           >
             {/* Header */}
@@ -139,12 +143,12 @@ function Login() {
                   </label>
                   <Link
                     to="/forgot-password"
-                    className="text-xs text-blue-400 hover:text-blue-300 transition-colors"
+                    className="text-xs text-blue-400 hover:text-blue-300 font-semibold transition-colors"
                   >
-                    Forgot password?
+                    Forgot?
                   </Link>
                 </div>
-                <div className="relative">
+                <div className="relative"> {/**here visibilty depends on type => if type=password then broswer wom`t show you esle will show */}
                   <input
                     type={showPassword ? "text" : "password"}
                     name="password"
@@ -169,7 +173,7 @@ function Login() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3.5 rounded-xl font-semibold text-white text-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed relative overflow-hidden"
+                  className="w-full py-3.5 rounded-xl font-semibold text-white preserve-white text-sm transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed relative overflow-hidden"
                   style={{
                     background: loading
                       ? "rgba(59,130,246,0.5)"

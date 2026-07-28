@@ -1,6 +1,8 @@
 import { LogOut, User } from "lucide-react";
 import { useNavigate, useLocation } from "react-router-dom";
 import API from "../../api/api";
+import ThemeToggle from "../ui/ThemeToggle";
+import NotificationBell from "../ui/NotificationBell";
 
 function Navbar() {
   const navigate = useNavigate();
@@ -71,6 +73,8 @@ function Navbar() {
 
         {/* Divider */}
         <div className="w-px h-5 bg-white/10 mx-2" />
+        <NotificationBell />
+        <ThemeToggle className="mr-2" />
 
         {/* Profile Avatar */}
         <button
