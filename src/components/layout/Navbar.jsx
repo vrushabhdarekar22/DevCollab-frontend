@@ -12,6 +12,7 @@ function Navbar() {
     try {
       await API.post("/user/logout");
       localStorage.removeItem("user");
+      localStorage.removeItem("token");
       navigate("/login");
     } catch (err) {
       console.error("Logout failed", err);

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import Navbar from "../../components/layout/Navbar";
 import { useTheme } from "../../components/ui/ThemeProvider";
 import { Crown, Users, Github, Linkedin, Pencil, X, Check } from "lucide-react";
+import API from "../../api/api";
 
 function Profile() {
   const navigate = useNavigate();
@@ -27,19 +28,8 @@ function Profile() {
   useEffect(() => {
     async function loadProfile() {
       try {
-        const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-        const res = await fetch(`${API_BASE_URL}/user/view-profile`, {
-          method: "GET",
-          credentials: "include",
-        });
-        const data = await res.json();
-        if (!res.ok) {
-          if (res.status === 401) {
-            navigate("/login");
-            return;
-          }
-          throw new Error(data.error || "Failed to load profile");
-        }
+        const res = await API.get("/user/view-profile");
+        const data = res.data;
         setUser(data);
         setForm({
           fullName: data.fullName || "",
@@ -51,8 +41,11 @@ function Profile() {
           profileImage: data.profileImage || ""
         });
       } catch (err) {
-        console.error(err);
-        alert("Failed to load profile: " + err.message);
+        if (err.response?.status === 401) {
+          navigate("/login");
+          return;
+        }
+        console.error("Failed to load profile", err);
       } finally {
         setLoading(false);
       }
@@ -108,22 +101,12 @@ function Profile() {
         profileImage: form.profileImage,
       };
 
-      const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-      const res = await fetch(`${API_BASE_URL}/user/update-profile`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(updates),
-      });
-      const body = await res.json();
-      if (!res.ok) {
-        throw new Error(body.error || body.message || "Update failed");
-      }
+      await API.put("/user/update-profile", updates);
       setUser({ ...user, ...updates });
       setShowModal(false);
     } catch (err) {
       console.error(err);
-      alert("Failed to update profile: " + err.message);
+      alert("Failed to update profile: " + (err.response?.data?.error || err.response?.data?.message || err.message));
     } finally {
       setSaving(false);
     }

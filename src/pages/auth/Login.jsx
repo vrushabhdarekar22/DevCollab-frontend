@@ -26,7 +26,6 @@ function Login() {
       }
 
       addToast("Logged in successfully", "success");
-      console.log("Success:", res.data);
 
       // redirect after success
       navigate("/projects");
