@@ -27,7 +27,8 @@ function Profile() {
   useEffect(() => {
     async function loadProfile() {
       try {
-        const res = await fetch("http://localhost:8000/user/view-profile", {
+        const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+        const res = await fetch(`${API_BASE_URL}/user/view-profile`, {
           method: "GET",
           credentials: "include",
         });
@@ -107,7 +108,8 @@ function Profile() {
         profileImage: form.profileImage,
       };
 
-      const res = await fetch("http://localhost:8000/user/update-profile", {
+      const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+      const res = await fetch(`${API_BASE_URL}/user/update-profile`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

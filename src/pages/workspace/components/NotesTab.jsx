@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { FileText, Save, Loader } from "lucide-react";
 import io from "socket.io-client";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+
 function NotesTab({ projectId, currentUser }) {
   const [note, setNote] = useState({ content: "", updatedBy: null, updatedAt: null });
   const [loading, setLoading] = useState(true);
@@ -13,7 +15,7 @@ function NotesTab({ projectId, currentUser }) {
     fetchNote();
 
     // Connect to Socket.IO
-    const newSocket = io("http://localhost:8000", {
+    const newSocket = io(API_BASE_URL, {
       transports: ["websocket", "polling"],
       withCredentials: true,
     });
@@ -35,7 +37,7 @@ function NotesTab({ projectId, currentUser }) {
   const fetchNote = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:8000/project/notes/${projectId}`, {
+      const res = await fetch(`${API_BASE_URL}/project/notes/${projectId}`, {
         method: "GET",
         credentials: "include",
       });
@@ -55,7 +57,7 @@ function NotesTab({ projectId, currentUser }) {
   const saveNote = async () => {
     try {
       setSaving(true);
-      const res = await fetch(`http://localhost:8000/project/notes/${projectId}`, {
+      const res = await fetch(`${API_BASE_URL}/project/notes/${projectId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
