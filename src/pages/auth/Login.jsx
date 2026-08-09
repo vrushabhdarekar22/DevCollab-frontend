@@ -21,6 +21,9 @@ function Login() {
 
     try {
       const res = await API.post("/auth/signin", form);
+      if (res.data.token) {
+        localStorage.setItem("token", res.data.token);
+      }
 
       addToast("Logged in successfully", "success");
       console.log("Success:", res.data);
