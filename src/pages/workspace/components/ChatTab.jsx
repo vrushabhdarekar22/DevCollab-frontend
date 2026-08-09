@@ -185,10 +185,11 @@ export default function ChatTab({
   useEffect(() => {
     if (!projectId || !currentUser) return;
 
-    const authToken = document.cookie
+    const cookieToken = document.cookie
       .split("; ")
       .find((row) => row.startsWith("token="))
       ?.split("=")[1];
+    const authToken = localStorage.getItem("token") || cookieToken;
 
     const socketUrl = import.meta.env.VITE_API_URL || "http://localhost:8000";
     const newSocket = io(socketUrl, {

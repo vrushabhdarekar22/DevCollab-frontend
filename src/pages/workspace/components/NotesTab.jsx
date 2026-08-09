@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { FileText, Save, Loader } from "lucide-react";
 import io from "socket.io-client";
+import API from "../../../api/api";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
 
@@ -14,22 +15,29 @@ function NotesTab({ projectId, currentUser }) {
   useEffect(() => {
     fetchNote();
 
-    // Connect to Socket.IO
+    const cookieToken = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("token="))
+      ?.split("=")[1];
+    const authToken = localStorage.getItem("token") || cookieToken;
+
+    // Connect to Socket.IO with token authentication
     const newSocket = io(API_BASE_URL, {
       transports: ["websocket", "polling"],
       withCredentials: true,
+      auth: { token: authToken },
     });
 
-    newSocket.emit('join-project', projectId);
+    newSocket.emit("join-project", projectId);
 
-    newSocket.on('note-updated', (updatedNote) => {
+    newSocket.on("note-updated", (updatedNote) => {
       setNote(updatedNote);
     });
 
     setSocket(newSocket);
 
     return () => {
-      newSocket.emit('leave-project', projectId);
+      newSocket.emit("leave-project", projectId);
       newSocket.disconnect();
     };
   }, [projectId]);
@@ -37,18 +45,11 @@ function NotesTab({ projectId, currentUser }) {
   const fetchNote = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE_URL}/project/notes/${projectId}`, {
-        method: "GET",
-        credentials: "include",
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to load note");
-      }
-      setNote(data.note);
+      const res = await API.get(`/project/notes/${projectId}`);
+      setNote(res.data.note || { content: "", updatedBy: null, updatedAt: null });
     } catch (err) {
-      console.error(err);
-      setError(err.message);
+      console.error("Fetch note error:", err);
+      setError(err.response?.data?.error || err.message || "Failed to load note");
     } finally {
       setLoading(false);
     }
@@ -57,20 +58,11 @@ function NotesTab({ projectId, currentUser }) {
   const saveNote = async () => {
     try {
       setSaving(true);
-      const res = await fetch(`${API_BASE_URL}/project/notes/${projectId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ content: note.content }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || "Failed to save note");
-      }
-      setNote(data.note);
+      const res = await API.put(`/project/notes/${projectId}`, { content: note.content });
+      setNote(res.data.note);
     } catch (err) {
-      console.error(err);
-      setError(err.message);
+      console.error("Save note error:", err);
+      setError(err.response?.data?.error || err.message || "Failed to save note");
     } finally {
       setSaving(false);
     }
